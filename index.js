@@ -31,7 +31,10 @@ export default {
                 const value = await env.KV.get(key.name);
                 if (value) {
                   try {
-                    records.push(JSON.parse(value));
+                    const record = JSON.parse(value);
+                    // 添加原始键到记录中
+                    record.key = key.name;
+                    records.push(record);
                   } catch (e) {
                     console.error('Failed to parse record:', e);
                   }
