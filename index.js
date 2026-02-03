@@ -24,18 +24,27 @@ export default {
         
         // 分批获取所有记录
         do {
-          const listResult = await env.KV.list({ cursor });
-          for (const key of listResult.keys) {
-            const value = await env.KV.get(key.name);
-            if (value) {
+          try {
+            const listResult = await env.KV.list({ cursor });
+            for (const key of listResult.keys) {
               try {
-                records.push(JSON.parse(value));
+                const value = await env.KV.get(key.name);
+                if (value) {
+                  try {
+                    records.push(JSON.parse(value));
+                  } catch (e) {
+                    console.error('Failed to parse record:', e);
+                  }
+                }
               } catch (e) {
-                console.error('Failed to parse record:', e);
+                console.error('Failed to get record:', e);
               }
             }
+            cursor = listResult.cursor;
+          } catch (e) {
+            console.error('Failed to list records:', e);
+            break;
           }
-          cursor = listResult.cursor;
         } while (cursor);
         
         // 按时间戳排序
