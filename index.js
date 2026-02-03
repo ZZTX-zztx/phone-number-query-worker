@@ -8,47 +8,71 @@ export default {
     if (path === '/api/queries') {
       if (request.method === 'GET') {
         // 获取所有查询记录
-        const allKeys = await env.KV.list({ prefix: 'query_' });
-        const queries = [];
-        
-        for (const key of allKeys.keys) {
-          const value = await env.KV.get(key.name);
-          if (value) {
-            try {
-              queries.push(JSON.parse(value));
-            } catch (e) {
-              console.error('Failed to parse query:', e);
+        try {
+          const allKeys = await env.KV.list();
+          const queries = [];
+          
+          for (const key of allKeys.keys) {
+            const value = await env.KV.get(key.name);
+            if (value) {
+              try {
+                queries.push(JSON.parse(value));
+              } catch (e) {
+                console.error('Failed to parse query:', e);
+              }
             }
           }
+          
+          // 按时间戳降序排序
+          queries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+          
+          return new Response(
+            JSON.stringify(queries),
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+              }
+            }
+          );
+        } catch (e) {
+          console.error('Failed to get queries:', e);
+          return new Response(
+            JSON.stringify({ success: false, message: '获取查询记录失败' }),
+            {
+              status: 500,
+              headers: {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+              }
+            }
+          );
         }
-        
-        // 按时间戳降序排序
-        queries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        
-        return new Response(
-          JSON.stringify(queries),
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              'Access-Control-Allow-Origin': '*',
-              'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-              'Access-Control-Allow-Headers': 'Content-Type'
-            }
-          }
-        );
       } else if (request.method === 'POST') {
         // 保存新的查询记录
         try {
           const record = await request.json();
           
-          // 生成唯一键
-          const key = `query_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          // 获取当前KV中的总项数
+          const allKeys = await env.KV.list();
+          const totalCount = allKeys.keys.length;
+          
+          // 使用总项数+1作为新的KEY
+          const key = (totalCount + 1).toString();
           
           // 保存到KV
           await env.KV.put(key, JSON.stringify(record));
           
           return new Response(
-            JSON.stringify({ success: true, message: '查询记录已保存' }),
+            JSON.stringify({ 
+              success: true, 
+              message: '查询记录已保存',
+              key: key
+            }),
             {
               headers: {
                 'Content-Type': 'application/json',
