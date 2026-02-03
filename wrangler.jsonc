@@ -1,7 +1,7 @@
 // cloudflare-worker/wrangler.json
 {
   "$schema": "https://workers.cloudflare.com/schemas/wrangler-2.0.json",
-  "name": "phone-backup",
+  "name": "phone-number-query-worker",
   "main": "index.js",
   "compatibility_date": "2026-02-03",
   "kv_namespaces": [
