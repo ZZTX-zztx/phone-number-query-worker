@@ -4,7 +4,7 @@ export default {
     // 处理CORS
     const headers = {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type'
     };
     
@@ -87,6 +87,46 @@ export default {
         });
       } catch (e) {
         console.error('POST error:', e);
+        return new Response(JSON.stringify({ error: e.message }), {
+          status: 500,
+          headers: {
+            ...headers,
+            'Content-Type': 'application/json'
+          }
+        });
+      }
+    }
+    
+    // 处理DELETE请求 - 删除记录
+    if (request.method === 'DELETE') {
+      try {
+        // 从URL路径中提取key
+        const pathname = url.pathname;
+        const key = pathname.split('/').pop();
+        
+        if (key) {
+          await env.KV.delete(key);
+          
+          return new Response(JSON.stringify({ 
+            success: true,
+            key: key
+          }), {
+            headers: {
+              ...headers,
+              'Content-Type': 'application/json'
+            }
+          });
+        } else {
+          return new Response(JSON.stringify({ error: 'No key provided' }), {
+            status: 400,
+            headers: {
+              ...headers,
+              'Content-Type': 'application/json'
+            }
+          });
+        }
+      } catch (e) {
+        console.error('DELETE error:', e);
         return new Response(JSON.stringify({ error: e.message }), {
           status: 500,
           headers: {
