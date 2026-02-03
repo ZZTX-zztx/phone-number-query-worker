@@ -6,15 +6,11 @@
   "observability": {
     "enabled": true
   },
-
-  // Add this to your wrangler.jsonc
   "kv_namespaces": [
     {
       "binding": "KV",
-      "id": "62fce0fa428b4eb7a6ded0fc9f845086",
-      
-      // Optional: preview_id used when running `wrangler dev` for local dev
-      "preview_id": "62fce0fa428b4eb7a6ded0fc9f845086"
+      "id": "f92cf0da4f2b42b49ed70a9d7f4c9f566b6dfd68",
+      "preview_id": "f92cf0da4f2b42b49ed70a9d7f4c9f566b6dfd68"
     }
   ]
 }
